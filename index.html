@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Learning - Fixed Mobile</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-rwdImageMaps/1.6/jquery.rwdImageMaps.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; text-align: center; background-color: #ffffff; font-family: sans-serif; }
+        .instruction { background: #333; color: white; padding: 10px; font-size: 14px; position: relative; z-index: 2000; }
+        
+        /* الحاوية يجب أن تكون مضبوطة بدقة */
+        .image-container { 
+            position: relative; 
+            display: inline-block; 
+            margin: 20px auto; 
+            max-width: 100%;
+        }
+
+        img { 
+            max-width: 100%; 
+            height: auto; 
+            display: block; 
+            z-index: 1;
+        }
+
+        /* مربع التركيز المطور */
+        #highlight-box {
+            position: absolute;
+            pointer-events: none;
+            /* استخدام shadow ضخم لتغطية الشاشة */
+            box-shadow: 0 0 0 5000px rgba(0, 0, 0, 0.7); 
+            z-index: 1000;
+            display: none;
+            border: 2px solid #fff;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        /* إخفاء أي زيادة خارج الحاوية لضمان عدم ظهور شريط تمرير */
+        .outer-wrapper { overflow: hidden; position: relative; width: 100%; }
+
+        area { cursor: pointer; outline: none; }
+    </style>
+</head>
+<body>
+
+    <div class="instruction">أنقر على الكلمة لسماع النطق</div>
+
+    <div class="outer-wrapper">
+        <div class="image-container" id="container">
+            <div id="highlight-box"></div>
+            <img src="numbers2.png" usemap="#image-map" id="colorImage">
+            <map name="image-map">
+<area target="" alt="" title="" href="speak('NUMBERS', this)" coords="288,129,986,242" shape="rect">
+    <area target="" alt="" title="" href="speak('EIGHTEEN', this)" coords="169,246,574,546" shape="rect">
+    <area target="" alt="" title="" href="speak('NINETEEN', this)" coords="1014,259,603,547" shape="rect">
+    <area target="" alt="" title="" href="speak('TWENTY', this)" coords="142,562,504,867" shape="rect">
+    <area target="" alt="" title="" href="speak('THIRTY', this)" coords="520,565,861,858" shape="rect">
+    <area target="" alt="" title="" href="speak('FOURTY', this)" coords="885,563,1261,864" shape="rect">
+    <area target="" alt="" title="" href="speak('FIFTY', this)" coords="162,886,489,1193" shape="rect">
+    <area target="" alt="" title="" href="speak('SIXTY', this)" coords="522,887,864,1194" shape="rect">
+    <area target="" alt="" title="" href="speak('SEVENTY', this)" coords="881,889,1263,1205" shape="rect">
+    <area target="" alt="" title="" href="speak('EIGHTY', this)" coords="167,1208,470,1502" shape="rect">
+    <area target="" alt="" title="" href="speak('NINETY', this)" coords="487,1210,808,1495" shape="rect">
+    <area target="" alt="" title="" href="speak('HUNDRED', this)" coords="828,1219,1268,1504" shape="rect">
+    <area target="" alt="" title="" href="speak('THOUSAND', this)" coords="372,1515,951,1808" shape="rect">
+</map>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#colorImage').rwdImageMaps();
+            
+            document.body.addEventListener('touchstart', function() {
+                window.speechSynthesis.getVoices();
+            }, {once: true});
+        });
+
+        function speak(word, element) {
+            window.speechSynthesis.cancel();
+            var msg = new SpeechSynthesisUtterance(word);
+            msg.lang = 'en-US';
+            msg.rate = 0.9;
+
+            msg.onend = function() {
+                document.getElementById('highlight-box').style.display = 'none';
+            };
+            
+            window.speechSynthesis.speak(msg);
+
+            // استدعاء وظيفة التظليل مع تأخير بسيط لضمان دقة الحسابات على الموبايل
+            setTimeout(function() {
+                showHighlight(element);
+            }, 10);
+        }
+
+        function showHighlight(areaElement) {
+            var img = document.getElementById('colorImage');
+            var highlight = document.getElementById('highlight-box');
+            
+            // قراءة الإحداثيات الحالية (التي تم تعديلها بواسطة مكتبة rwdImageMaps)
+            var currentCoords = areaElement.coords.split(',');
+            var xCoords = [], yCoords = [];
+
+            for (var i = 0; i < currentCoords.length; i += 2) {
+                xCoords.push(parseFloat(currentCoords[i]));
+                yCoords.push(parseFloat(currentCoords[i+1]));
+            }
+
+            var minX = Math.min(...xCoords);
+            var maxX = Math.max(...xCoords);
+            var minY = Math.min(...yCoords);
+            var maxY = Math.max(...yCoords);
+
+            // تحديد الموقع بدقة متناهية بالنسبة للحاوية
+            highlight.style.left = minX + "px";
+            highlight.style.top = minY + "px";
+            highlight.style.width = (maxX - minX) + "px";
+            highlight.style.height = (maxY - minY) + "px";
+            
+            highlight.style.display = "block";
+        }
+    </script>
+</body>
+</html>
